@@ -1,0 +1,2 @@
+numpy
+-e git://github.com/matplotlib/matplotlib.git#egg=matplotlib
