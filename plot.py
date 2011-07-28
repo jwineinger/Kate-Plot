@@ -4,7 +4,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 path = os.path.dirname(os.path.abspath(__file__))
 
-reader = csv.reader(open('weights.txt'))
+reader = csv.reader(open('chart_weights.txt'))
 ages, weights = [], []
 last_date = None
 for line in reader:
@@ -30,9 +30,9 @@ for pcile, data in sorted(pciles.iteritems()):
 plt.plot(ages, weights, 'mo-')
 plt.ylabel("Weight (kg)")
 plt.xlabel("Week")
-plt.axis([31,40,.5,4.0])
+plt.axis([30,40,.5,4.0])
 plt.grid(True)
-plt.legend(('3%','10%','50%','90%','97%','Kate'))
+plt.legend(('3%','10%','50%','90%','97%','Kate'), loc=2, fancybox=True, shadow=True, ncol=2)
 plt.annotate(
     '%d g on %s' % (weights[-1] * 1000, last_date),
     xy=(ages[-1] + .1, weights[-1] - .05),
