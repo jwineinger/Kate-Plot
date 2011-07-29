@@ -29,17 +29,17 @@ for line in reader:
 for pcile, data in sorted(pciles.iteritems()):
     plt.plot(data.keys(), data.values())
 
-plt.plot(ages, weights, 'mo-')
+plt.plot(ages, weights, 'm.-')
 plt.ylabel("Weight (g)")
 plt.xlabel("Week")
-plt.axis([30,40,500,5000])
+plt.axis([32,37,1000,4000])
 plt.grid(True)
 plt.legend(('3%','10%','50%','90%','97%','Kate'), loc=2, fancybox=True, shadow=True, ncol=2)
 plt.annotate(
     '%d g' % weights[-1],
     xy=(ages[-1], weights[-1]),
     xycoords='data',
-    xytext=(20, -50),
+    xytext=(-50, -30),
     textcoords='offset points',
     arrowprops=dict(arrowstyle="->",
                     connectionstyle="angle,angleA=0,angleB=90,rad=10"),
@@ -48,7 +48,7 @@ plt.annotate(
 # start the second plot
 plt.subplot(2,1,2)
 plt.ylabel("Weight Change (g)")
-plt.axis([30,40,-30,130])
+plt.axis([32,37,-30,130])
 plt.grid(True)
 
 weight_changes, bar_colors = [], []
