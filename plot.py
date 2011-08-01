@@ -6,6 +6,10 @@ import matplotlib.mlab as mlab
 from datetime import date
 
 def plot_fenton_curves(plt):
+    from numpy import linspace, array
+    from scipy.interpolate import interp1d
+    fenton_range = linspace(22, 50, (50 - 22) * 7)
+
     pciles = {}
     weeks = []
     vals = []
@@ -18,8 +22,12 @@ def plot_fenton_curves(plt):
             pciles[pcile] = {week: val * 1000}
         pciles[pcile][week] = val * 1000
 
+    fenton_functions = {}
     for pcile, data in sorted(pciles.iteritems()):
+        fenton_functions[pcile] = interp1d(data.keys(), data.values(), kind='cubic')
         plt.plot(data.keys(), data.values(), label='%d%%' % pcile)
+
+    return fenton_functions
 
 def plot_kate(plt):
     reader = csv.reader(open('chart_weights.txt'))
@@ -83,10 +91,16 @@ def plot_daily_changes(plt, ages, weights):
         i += 1
     plt.bar(ages[1:], weight_changes, width=1/7., color=bar_colors, align='center')
 
-# start first plot
-plt.subplot(2,1,1)
+def plot_fenton_difference(plt, ages, weights, fenton_fns):
+    for pcile, fn in sorted(fenton_fns.iteritems()):
+        pcile_ys = [fn(age) - weights[i] for i,age in enumerate(ages)]
+        plt.plot(ages, pcile_ys, label='%d%%' % pcile)
 
-plot_fenton_curves(plt)
+
+# start first plot
+plt.subplot(3,1,1)
+
+fenton_fns = plot_fenton_curves(plt)
 ages, weights = plot_kate(plt)
 plot_future_averages(plt, ages, weights)
 
@@ -95,23 +109,18 @@ plt.ylabel("Weight (g)")
 plt.xlabel("Week")
 plt.axis([32,40,1000,4000])
 plt.grid(True)
-#plt.legend(('3%','10%','50%','90%','97%','Kate'), loc=2, fancybox=True, shadow=True, ncol=2)
 plt.legend(loc=2, fancybox=True, shadow=True, ncol=2)
 
-
-# get legend for customization
+# customize legend
 leg = plt.gca().get_legend()
 ltext  = leg.get_texts()  # all the text.Text instance in the legend
 llines = leg.get_lines()  # all the lines.Line2D instance in the legend
-
-# see text.Text, lines.Line2D, and patches.Rectangle for more info on
-# the settable properties of lines, text, and rectangles
 plt.setp(ltext, fontsize='small')    # the legend text fontsize
 plt.setp(llines, linewidth=1.5)      # the legend linewidth
 
 
 # start the second plot
-plt.subplot(2,1,2)
+plt.subplot(3,1,2)
 
 # setup labels, data range, grid, on bottom plot
 plt.ylabel("Weight Change (g)")
@@ -120,9 +129,23 @@ plt.grid(True)
 
 plot_daily_changes(plt, ages, weights)
 
-# set the output figure size (8x10)
+
+# start the third plot
+plt.subplot(3,1,3)
+
+# plot kate's difference from fenton curves
+plot_fenton_difference(plt, ages, weights, fenton_fns)
+
+# setup labels, data range, grid, on bottom plot
+plt.ylabel("Difference from Fenton (g)")
+plt.axis([32,37,0,1000])
+plt.grid(True)
+plt.legend(loc=2, fancybox=True, shadow=True, ncol=2)
+
+
+# set the output figure size
 fig = plt.gcf()
-fig.set_size_inches(8,10)
+fig.set_size_inches(8,14)
 
 path = os.path.dirname(os.path.abspath(__file__))
-plt.savefig(os.path.join(path, "www/%s.png" % date.today().strftime("%Y-%m-%d")), dpi=100)
+plt.savefig(os.path.join(path, "www/%s.png" % date.today().strftime("%Y-%m-%d")), dpi=100, bbox_inches='tight')
