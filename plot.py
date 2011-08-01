@@ -6,6 +6,19 @@ import matplotlib.mlab as mlab
 from datetime import date
 
 def plot_fenton_curves(plt):
+    """
+    Reads the fenton curve data for preemature infant weight from a CSV file.
+    The file includes the percentile curve, gestational age, and infant
+    weight in kg.
+
+    This function plots each percentile as well as calculates a cubic
+    iterpolation so that we can evaluate kate's weigth against each curve at
+    any point, even though we only start with a data point at each week of 
+    gestation.
+
+    Returns a dictionary mapping integer percentiles to the interpolated
+    function for that percentile.
+    """
     from numpy import linspace, array
     from scipy.interpolate import interp1d
     fenton_range = linspace(22, 50, (50 - 22) * 7)
@@ -18,18 +31,31 @@ def plot_fenton_curves(plt):
         pcile = int(line[1])
         week = int(line[0])
         val = Decimal(line[2])
+
+        # convert to grams
         if pcile not in pciles:
             pciles[pcile] = {week: val * 1000}
         pciles[pcile][week] = val * 1000
 
     fenton_functions = {}
+    # process in increasing order of percentiles so the legend is ordered logically
     for pcile, data in sorted(pciles.iteritems()):
-        fenton_functions[pcile] = interp1d(data.keys(), data.values(), kind='cubic')
+        # plot the data
         plt.plot(data.keys(), data.values(), label='%d%%' % pcile)
+        # calculate the interpolated function
+        fenton_functions[pcile] = interp1d(data.keys(), data.values(), kind='cubic')
 
     return fenton_functions
 
 def plot_kate(plt):
+    """
+    Plots Kate's weight.
+
+    Reads her daily weight in grams from a CSV, plots it, and annotates the
+    last data point with her actual weight.
+
+    Returns a 2-tuple of her ages (X) and weights (Y)
+    """
     reader = csv.reader(open('chart_weights.txt'))
     ages, weights = [], []
     last_date = None
@@ -53,18 +79,17 @@ def plot_kate(plt):
 
 def plot_future_averages(plt, ages, weights):
     """
-    Plots some extrapolated data from Kate's recent average weight chanegs.
+    Plots some extrapolated data from Kate's recent average weight changes.
     """
     from numpy import linspace, array
+    # generate x-values from kate's last data point to 50 weeks gestation,
+    # one point per day
     extrap_range = linspace(ages[-1], 50, (50 - ages[-1]) * 7)
 
     def get_ys(avg):
-        y = []
-        for i, v in enumerate(extrap_range):
-            y.append(weights[-1] + avg * i)
-        return array(y)
+        return array([weights[-1] + avg * i for i in range(len(extrap_range))])
 
-    avg_1 = (weights[-1] - weights[-2]) / 1.
+    avg_1 = weights[-1] - weights[-2]
     avg_2 = (weights[-1] - weights[-3]) / 2.
     avg_3 = (weights[-1] - weights[-3]) / 3.
     avg_7 = (weights[-1] - weights[-7]) / 7.
@@ -79,19 +104,32 @@ def plot_future_averages(plt, ages, weights):
     plt.plot(extrap_range, get_ys(avg_28), 'm--', label='28-day avg gain')
 
 def plot_daily_changes(plt, ages, weights):
+    """
+    Plots a bar chart of Kate's daily weight changes.
+    """
     weight_changes, bar_colors = [], []
     i = 0
     # calculate daily weight changes and set colors for positive/negative
     while i <= (len(weights) - 2):
         weight_changes.append(weights[i+1] - weights[i])
         if weight_changes[-1] > 0:
+            # positive days are blue
             bar_colors.append('b')
         else:
+            # negative days are red
             bar_colors.append('r')
         i += 1
+
+    # since we're calculating daily changes, omit the first day from the
+    # x-values. 'align=center' centers the bars over the daily points
+    # instead of aligning the edge of the bars with the points
     plt.bar(ages[1:], weight_changes, width=1/7., color=bar_colors, align='center')
 
 def plot_fenton_difference(plt, ages, weights, fenton_fns):
+    """
+    Plots Kate's difference from each of the fenton percentile curves. Uses
+    the interpolated fenton curves to evaluate at each day.
+    """
     for pcile, fn in sorted(fenton_fns.iteritems()):
         pcile_ys = [fn(age) - weights[i] for i,age in enumerate(ages)]
         plt.plot(ages, pcile_ys, label='%d%%' % pcile)
