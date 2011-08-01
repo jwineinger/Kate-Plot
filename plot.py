@@ -3,6 +3,7 @@ import matplotlib, os.path, csv
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
+from datetime import date
 
 def plot_fenton_curves(plt):
     pciles = {}
@@ -124,4 +125,4 @@ fig = plt.gcf()
 fig.set_size_inches(8,10)
 
 path = os.path.dirname(os.path.abspath(__file__))
-plt.savefig(os.path.join(path, "www/fenton.png"), dpi=100)
+plt.savefig(os.path.join(path, "www/%s.png" % date.today().strftime("%Y-%m-%d")), dpi=100)
