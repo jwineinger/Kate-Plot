@@ -178,7 +178,7 @@ plt.subplot(3,1,2)
 
 # setup labels, data range, grid, on bottom plot
 plt.ylabel("Weight Change (g)")
-plt.axis([32,37,-30,130])
+plt.axis([32,40,-30,130])
 plt.grid(True)
 
 plot_daily_changes(plt, ages, weights)
@@ -192,7 +192,7 @@ plot_fenton_difference(plt, ages, weights, fenton_fns)
 
 # setup labels, data range, grid, on bottom plot
 plt.ylabel("Difference from Fenton (g)")
-plt.axis([32,37,0,1000])
+plt.axis([32,40,0,1000])
 plt.grid(True)
 plt.legend(loc=2, fancybox=True, shadow=True, ncol=2)
 
