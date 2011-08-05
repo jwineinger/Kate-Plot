@@ -72,8 +72,24 @@ def plot_kate(plt):
         xycoords='data',
         xytext=(-50, -30),
         textcoords='offset points',
-        arrowprops=dict(arrowstyle="->",
-                        connectionstyle="angle,angleA=0,angleB=90,rad=10"),
+        size=8,
+        bbox=dict(boxstyle="round", fc="0.8"),
+        arrowprops=dict(arrowstyle="wedge,tail_width=0.7",
+                        fc="0.6", ec="none",
+                        connectionstyle="arc3,rad=0.3"),
+    )
+
+    plt.annotate(
+        'Start Similac',
+        xy=(ages[33], weights[33]),
+        xycoords='data',
+        xytext=(-80, 15),
+        textcoords='offset points',
+        size=8,
+        bbox=dict(boxstyle="round", fc="0.8"),
+        arrowprops=dict(arrowstyle="wedge,tail_width=0.7",
+                        fc="0.6", ec="none",
+                        connectionstyle="arc3,rad=-0.3"),
     )
     return (ages, weights)
 
