@@ -15,24 +15,25 @@ class BabyPlotter(object):
         self.dpi = dpi
 
     def select_baby_plot(self):
-        # start first plot
         plt.subplot(3,1,1)
 
+    #def select_adjusted_baby_plot(self):
+        #plt.subplot(4,1,2)
+
     def select_daily_change_plot(self):
-        # start the second plot
         plt.subplot(3,1,2)
 
     def select_difference_plot(self):
-        # start the third plot
         plt.subplot(3,1,3)
 
     def setup_baby_plot(self):
         # setup labels, data range, grid, and legend on top plot
+        plt.title("Baby's Weight vs Fenton Curves ")
         plt.ylabel("Weight (g)")
         plt.xlabel("Week")
-        plt.axis([32,40,1000,4000])
+        plt.axis([32,50,700,4000])
         plt.grid(True)
-        plt.legend(loc=2, fancybox=True, shadow=True, ncol=2)
+        plt.legend(loc="upper left", fancybox=True, shadow=True, ncol=2)
 
         # customize legend
         leg = plt.gca().get_legend()
@@ -43,16 +44,20 @@ class BabyPlotter(object):
 
     def setup_daily_changes_plot(self):
         # setup labels, data range, grid, on bottom plot
+        plt.title("Daily Weight Change")
         plt.ylabel("Weight Change (g)")
-        plt.axis([32,40,-30,130])
+        plt.xlabel("Week")
+        plt.axis([32,50,-40,200])
         plt.grid(True)
 
     def setup_difference_plot(self):
         # setup labels, data range, grid, on bottom plot
-        plt.ylabel("Difference from Fenton (g)")
-        plt.axis([32,40,0,1000])
+        plt.title("Difference from Fenton curves")
+        plt.ylabel("Difference (g)")
+        plt.xlabel("Week")
+        plt.axis([32,50,0,600])
         plt.grid(True)
-        plt.legend(loc=2, fancybox=True, shadow=True, ncol=2)
+        plt.legend(loc="lower center", fancybox=True, shadow=True, ncol=2)
 
     def setup_baby_info(self, data):
         """
@@ -115,8 +120,24 @@ class BabyPlotter(object):
         x = linspace(22, 50, (50 - 22) * 7)
         # process in increasing order of percentiles so the legend is ordered logically
         for pcile, fenton_fn in sorted(self.fentons.iteritems()):
-            # plot the data
             plt.plot(x, fenton_fn(x), label='%d%%' % pcile)
+
+
+    def plot_adjusted_fenton_curves(self):
+        """
+        Graphs the entire fenton curves (22 weeks to 50 weeks) for each
+        percentile.
+        """
+        from numpy import linspace
+        # generate x-values from 22 weeks to 50 weeks, one point per day
+        x = linspace(22, 50, (50 - 22) * 7)
+
+        # process in increasing order of percentiles so the legend is ordered
+        # logically
+        for pcile, fenton_fn in sorted(self.fentons.iteritems()):
+            # adjust the X values by 34 days so that kate's birth weight is at
+            # the 50th percentile
+            plt.plot(x + (34/7.), fenton_fn(x), '--', label="%d%%" % pcile)
 
     def plot_baby(self):
         """
@@ -126,6 +147,12 @@ class BabyPlotter(object):
         Also annotates the data point where she switched from Prolacta to
         Similac.
         """
+        #from numpy import linspace
+        ## generate x-values from 22 weeks to 50 weeks, one point per day
+        #x = linspace(22, 50, (50 - 22) * 7)
+        #plt.plot(x, [self.weights[0] for v in x], 'o')
+        #plt.plot(x, [self.weights[2] for v in x], 'o')
+
         plt.plot(self.ages, self.weights, 'm.-', label=self.baby)
 
         plt.annotate(
@@ -144,6 +171,19 @@ class BabyPlotter(object):
         plt.annotate(
             'Start Similac',
             xy=(self.ages[33], self.weights[33]),
+            xycoords='data',
+            xytext=(-80, 15),
+            textcoords='offset points',
+            size=8,
+            bbox=dict(boxstyle="round", fc="0.8"),
+            arrowprops=dict(arrowstyle="wedge,tail_width=0.7",
+                            fc="0.6", ec="none",
+                            connectionstyle="arc3,rad=-0.3"),
+        )
+
+        plt.annotate(
+            'End Similac',
+            xy=(self.ages[71], self.weights[71]),
             xycoords='data',
             xytext=(-80, 15),
             textcoords='offset points',
@@ -227,8 +267,14 @@ bp = BabyPlotter('Kate', kate, fenton)
 bp.select_baby_plot()
 bp.plot_fenton_curves()
 bp.plot_baby()
-bp.plot_future_averages()
+#bp.plot_future_averages()
 bp.setup_baby_plot()
+
+#bp.select_adjusted_baby_plot()
+#bp.plot_adjusted_fenton_curves()
+#bp.plot_baby()
+#bp.setup_baby_plot()
+#plt.title("Baby's Weight vs Fenton curves translated 34 days")
 
 bp.select_daily_change_plot()
 bp.plot_daily_changes()
@@ -237,5 +283,8 @@ bp.setup_daily_changes_plot()
 bp.select_difference_plot()
 bp.plot_fenton_difference()
 bp.setup_difference_plot()
+
+plt.suptitle("Kate Wineinger")
+plt.subplots_adjust(hspace=.4)
 
 bp.save()
